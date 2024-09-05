@@ -1,4 +1,4 @@
-import { envs } from './core/config/env';
+import { envs } from './core';
 import { Server } from './server';
 
 (() => {
