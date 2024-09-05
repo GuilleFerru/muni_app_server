@@ -30,7 +30,17 @@ export class AuthController {
         next: NexFunction
     ): void =>{
         const {email, password} = req.body;
-        const dto = LoginUserDto.create({email, password};)
+        const dto = LoginUserDto.create({email, password});
+        new LoginUser(this.repository).execute(dto).then((result)=> res.json({data: result}).catch(next));
+    }
+
+    public register = (
+        req: Request<unknown, unknown, RequestBodyLogin>,
+        res: Response<SuccessResponse<AuthEntity>>,
+        next: NexFunction
+    ): void => {
+        const {email, name, password} = req.body;
+        const dto = RegisterUserDto.create({email, name, password});
     }
 
 }
