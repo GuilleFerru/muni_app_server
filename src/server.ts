@@ -4,6 +4,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 
 import { HttpCode, ONE_HUNDRED, ONE_THOUSAND, SIXTY, AppError } from './core';
+import { CustomMiddlewares, ErrorMiddleware } from './features/shared';
 
 interface ServerOptions {
     port: number;
@@ -43,7 +44,7 @@ export class Server {
         );
 
         // Shared Middlewares
-		//this.app.use(CustomMiddlewares.writeInConsole);
+		this.app.use(CustomMiddlewares.writeInConsole);
 
         // CORS
         this.app.use((req, res, next) => {
@@ -73,7 +74,7 @@ export class Server {
         });
 
         // Handle errors middleware
-        //this.routes.use(ErrorMiddleware.handleError);
+        this.routes.use(ErrorMiddleware.handleError);
 
         this.app.listen(this.port, () => {
             console.log(`Server running on port ${this.port}...`);
