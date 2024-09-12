@@ -1,22 +1,28 @@
-import express, { type Request, type Response } from 'express';
+import { type Server as ServerHttp, type IncomingMessage, type ServerResponse } from 'http';
+import express, { type Router, type Request, type Response, type NextFunction } from 'express';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 
-import { HttpCode, ONE_HUNDRED, ONE_THOUSAND, SIXTY } from './core/constants';
+import { HttpCode, ONE_HUNDRED, ONE_THOUSAND, SIXTY, AppError } from './core';
 
 interface ServerOptions {
     port: number;
+    routes: Router;
     apiPrefix: string;
 }
 
 export class Server {
-    private readonly app = express();
+    //private readonly app = express();
+    public readonly app = express(); // This is public for testing purposes
+    private serverListener?: ServerHttp<typeof IncomingMessage, typeof ServerResponse>;
     private readonly port: number;
+    private readonly routes: Router;
     private readonly apiPrefix: string;
 
     constructor(options: ServerOptions) {
-        const { port, apiPrefix } = options;
+        const { port, routes, apiPrefix } = options;
         this.port = port;
+        this.routes = routes;
         this.apiPrefix = apiPrefix;
     }
 
@@ -36,6 +42,24 @@ export class Server {
             })
         );
 
+        // Shared Middlewares
+		//this.app.use(CustomMiddlewares.writeInConsole);
+
+        // CORS
+        this.app.use((req, res, next) => {
+            const allowedOrigins = ['http://localhost:3000'];
+            const origin = req.headers.origin;
+            if (allowedOrigins.includes(origin!)) {
+                res.setHeader('Access-Control-Allow-Origin', origin!);
+            }
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+            next();
+        })
+
+        //* Routes
+        this.app.use(this.apiPrefix, this.routes);
+
         // Test rest api
         this.app.get('/', (_req: Request, res: Response) => {
             return res.status(HttpCode.OK).send({
@@ -43,9 +67,21 @@ export class Server {
             });
         });
 
+        //* Handle not found routes in /api/v1/* (only if 'Public content folder' is not available)
+        this.routes.all('*', (req: Request, _: Response, next: NextFunction): void => {
+            next(AppError.notFound(`Cant find ${req.originalUrl} on this server!`));
+        });
+
+        // Handle errors middleware
+        //this.routes.use(ErrorMiddleware.handleError);
+
         this.app.listen(this.port, () => {
             console.log(`Server running on port ${this.port}...`);
         });
     }
 
+    close(): void {
+        this.serverListener?.close()
+
+    }
 }

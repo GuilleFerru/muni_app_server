@@ -22,7 +22,7 @@ const USER_MOCK = [
     }
 ]
 
-export class AuthDatasourceImp implements AuthDatasource {
+export class AuthDataSourceImpl implements AuthDatasource {
 
     public async register(dto: RegisterUserDto): Promise<AuthEntity> {
         const user = USER_MOCK.find(user => user.email === dto.email);

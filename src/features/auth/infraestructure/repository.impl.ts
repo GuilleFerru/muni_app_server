@@ -2,7 +2,7 @@
 import {
     type RegisterUserDto,
     type AuthRepository,
-    type AutEntity,
+    type AuthEntity,
     type AuthDatasource,
     type LoginUserDto,
     type UserEntity
@@ -14,11 +14,11 @@ export class AuthRepositoryImpl implements AuthRepository {
         private readonly datasource: AuthDatasource
     ) { }
 
-    public async register(dto: RegisterUserDto): Promise<AutEntity> {
+    public async register(dto: RegisterUserDto): Promise<AuthEntity> {
         return await this.datasource.register(dto);
     }
 
-    public async login(dto: LoginUserDto): Promise<AutEntity> {
+    public async login(dto: LoginUserDto): Promise<AuthEntity> {
         return await this.datasource.login(dto);
     }
 
